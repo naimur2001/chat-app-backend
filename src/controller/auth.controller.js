@@ -57,34 +57,40 @@ try {
 
 }
 //signup end
-export const login= async (req,res)=>{
-  const {email,password}= req.body
-try {
-  const user=await User.findOne({email})
-  if (!user) {
-    return res.status(400).json({message:"Invalid credintials"})
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Compare the provided password with the hashed password in the database
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Generate the JWT token and set the cookie
+    generateToken(user._id, res);
+
+    // Send the user data in the response after setting the token
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
+      createdAt: user.createdAt,
+    });
+  } catch (error) {
+    console.log("Error in login controller", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  const isPasswordCorrect=await bcrypt.compare(password, user.password)
-
-  if (!isPasswordCorrect) {
-    return res.status(400).json({message:"Invalid credintials"})
-  }
-  res.status(201).json({
-    _id:user._id,
-    fullName:user.fullName,
-    email:user.email,
-    profilePic: user.profilePic
-  })
-  generateToken(user._id,res)
-
-} catch (error) {
-  console.log("Error in login controller", error.message)
-
-}
-
-
-}
+};
 // login end 
 export const logout=(req,res)=>{
  try {
@@ -116,7 +122,6 @@ const updateUser=await User.findByIdAndUpdate(userId,{profilePic:uploadResponse.
 }
 }
 // updateProfile end 
-
 export const checkAuth =(req,res)=>{
   try {
     res.status(200).json(req.user)
@@ -125,5 +130,4 @@ export const checkAuth =(req,res)=>{
   res.status(500).json({message:"Internal server error"})
   }
 }
-
 // checkauth end
