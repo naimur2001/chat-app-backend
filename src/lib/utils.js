@@ -10,7 +10,7 @@ export const generateToken = (userId, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // Cookie expiration (7 days)
       httpOnly: true, // Prevent XSS attacks
       sameSite: "strict", // Prevent CSRF attacks
-      secure: process.env.NODE_ENV === "production", // Use secure cookies only in production
+      secure: process.env.NODE_ENV === "development", // Use secure cookies only in production
     });
 
   } catch (error) {
